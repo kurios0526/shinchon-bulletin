@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>신촌교회 주보 편집실</title>
+<style>
+:root {
+  --navy:#1e3a6e; --navy2:#2d5090; --navylight:#e8edf5;
+  --accent:#4a7cc7; --accentsoft:#d0dff5;
+  --gray1:#f5f6f8; --gray2:#e8eaed; --gray3:#9ca3af; --gray7:#374151;
+  --white:#fff; --text:#1a1a2e; --border:#d0d8e8;
+  --green:#2d7a4f; --greenlight:#e6f4ec;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;background:var(--gray1);color:var(--text);}
+
+/* 헤더 */
+.hero{position:relative;width:100%;line-height:0;}
+.hero img{width:100%;height:auto;display:block;}
+.hero-overlay{position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(to top,rgba(15,28,60,.9),transparent);}
+.hero-bottom{position:absolute;bottom:12px;left:20px;display:flex;align-items:center;gap:12px;}
+.hero-title{color:#fff;font-size:17px;font-weight:800;letter-spacing:-.5px;text-shadow:0 1px 6px rgba(0,0,0,.5);}
+.date-nav{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.18);border-radius:24px;padding:4px 8px;backdrop-filter:blur(4px);}
+.date-nav button{background:rgba(255,255,255,.25);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;}
+.date-nav button:hover{background:rgba(255,255,255,.4);}
+#dateLabel{color:#fff;font-size:13px;font-weight:700;min-width:148px;text-align:center;padding:0 4px;}
+
+/* 레이아웃 */
+.wrap{display:flex;flex-direction:column;height:calc(100vh - 10px);}
+.main{flex:1;overflow-y:auto;padding:20px 24px 80px;}
+
+/* 상단 탭 */
+.topnav{background:#fff;border-bottom:2px solid var(--border);display:flex;align-items:center;overflow-x:auto;flex-shrink:0;padding:0 16px;}
+.topnav::-webkit-scrollbar{height:3px;}
+.topnav::-webkit-scrollbar-thumb{background:var(--border);}
+.tab{display:flex;align-items:center;padding:11px 15px;cursor:pointer;border-bottom:3px solid transparent;font-size:13px;color:var(--gray7);transition:all .15s;user-select:none;white-space:nowrap;margin-bottom:-2px;flex-shrink:0;}
+.tab:hover{color:var(--navy);background:var(--navylight);}
+.tab.on{border-bottom-color:var(--navy);color:var(--navy);font-weight:700;background:var(--navylight);}
+.tab-preview{color:var(--green) !important;font-weight:700;margin-left:auto;}
+
+/* 페이지 */
+.page{display:none;}
+.page.on{display:block;}
+
+/* 카드 */
+.card{background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden;}
+.card-head{background:linear-gradient(90deg,var(--navy),var(--navy2));color:#fff;padding:9px 16px;font-size:13px;font-weight:700;}
+.card-body{padding:16px;}
+
+/* 기본정보 띠 */
+.info-bar{background:linear-gradient(90deg,var(--navy),var(--navy2));border-radius:10px;padding:11px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.info-bar label{color:rgba(255,255,255,.7);font-size:11px;white-space:nowrap;}
+.info-bar input{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:5px 10px;font-size:12px;color:#fff;font-family:inherit;outline:none;}
+.info-bar input::placeholder{color:rgba(255,255,255,.45);}
+.info-bar input:focus{background:rgba(255,255,255,.2);}
+
+/* 폼 */
+label.lbl{font-size:11px;font-weight:700;color:var(--navy);display:block;margin-bottom:3px;}
+input[type=text],input[type=number],textarea,select{border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;font-family:inherit;color:var(--text);background:#fff;width:100%;transition:border-color .15s;}
+input[type=text]:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accentsoft);}
+textarea{resize:vertical;min-height:68px;line-height:1.55;}
+.row{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+.fg{display:flex;flex-direction:column;gap:3px;flex:1;min-width:130px;}
+.fg.w2{flex:2;} .fg.w3{flex:3;} .fg.full{flex:100%;min-width:100%;}
+
+/* 주보 표 */
+.jtable{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
+.jtable th{background:var(--navylight);color:var(--navy);font-size:12px;padding:8px 10px;text-align:center;border-bottom:2px solid var(--border);}
+.jtable th.accent{color:var(--accent);}
+.jtable td{padding:6px 8px;border-bottom:1px solid var(--gray2);vertical-align:middle;}
+.jtable tr:last-child td{border-bottom:none;}
+.jtable tr:nth-child(even){background:#fafbfd;}
+.jtable td input,.jtable td textarea,.jtable td select{font-size:12px;padding:4px 7px;}
+.bl{border-left:1px solid var(--gray2);}
+
+/* 동적 행 */
+.drow{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start;}
+.drow textarea{flex:1;min-height:50px;}
+.dnum{background:var(--navy);color:#fff;font-size:11px;font-weight:800;min-width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:6px;flex-shrink:0;}
+.dnum.mid{background:var(--navy2);}
+.add-btn{font-size:12px;color:var(--accent);background:none;border:1px dashed var(--accent);padding:4px 12px;border-radius:5px;cursor:pointer;font-family:inherit;font-weight:600;}
+.add-btn:hover{background:var(--accentsoft);}
+.rm-btn{background:none;border:none;color:#dc2626;cursor:pointer;font-size:16px;font-weight:700;padding:0 3px;line-height:1;flex-shrink:0;margin-top:4px;}
+
+/* 하단 바 */
+.bottom{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:8px;z-index:50;}
+.btn{padding:8px 18px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:5px;}
+.btn-sub{background:var(--gray2);color:var(--gray7);}
+.btn-sub:hover{background:var(--navylight);color:var(--navy);}
+.btn-ok{background:var(--green);color:#fff;margin-left:auto;}
+.btn-ok:hover{background:#245f3e;transform:translateY(-1px);}
+#saveNote{font-size:12px;color:var(--gray3);}
+
+/* 모달 */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;}
+.modal-bg.on{display:flex;}
+.modal{background:#fff;border-radius:12px;width:90%;max-width:680px;max-height:85vh;overflow-y:auto;padding:26px;}
+.modal h2{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:16px;}
+.psec{margin-bottom:14px;border-bottom:1px solid var(--gray2);padding-bottom:14px;}
+.psec:last-child{border:none;}
+.plabel{font-size:11px;font-weight:700;color:var(--navy);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;}
+.pcontent{font-size:13px;line-height:1.7;white-space:pre-wrap;}
+.modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;}
+
+/* 토스트 */
+.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--navy);color:#fff;padding:9px 20px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:300;white-space:nowrap;}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ===== 모바일 최적화 ===== */
+@media (max-width: 600px) {
+  .hero-title{font-size:13px;}
+  #dateLabel{font-size:12px;min-width:110px;}
+  .date-nav button{width:22px;height:22px;font-size:11px;}
+  .topnav{padding:0 6px;}
+  .tab{padding:10px 10px;font-size:12px;}
+  .main{padding:12px 12px 90px;}
+  .info-bar{gap:8px;padding:10px 12px;flex-direction:column;align-items:flex-start;}
+  .info-bar > div{width:100%;}
+  .info-bar input{width:100%;}
+  .card-body{padding:12px;}
+  .row{flex-direction:column;gap:8px;}
+  .fg{min-width:100% !important;width:100%;}
+  .jtable{font-size:11px;}
+  .jtable th,.jtable td{padding:5px 5px;}
+  .bottom{padding:8px 12px;gap:6px;}
+  .btn{padding:7px 12px;font-size:12px;}
+  .modal .modal{width:96%;padding:0;}
+  #previewContent{padding:12px;}
+  .pg-title{font-size:15px;}
+  .pg-badge{font-size:10px;}
+  /* 주중예배 표 모바일 - 가로 스크롤 */
+  .jtable-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+}
+.hint{font-size:11px;color:var(--gray3);margin-top:2px;}
+.divider{height:1px;background:var(--gray2);margin:12px 0;}
+.pg-title{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.pg-badge{background:var(--navy);color:#fff;font-size:11px;padding:2px 9px;border-radius:10px;}
+</style>
+</head>
+<body>
+
+<!-- 헤더 이미지 -->
+<div class="hero">
+  <img src="header.jpg" alt="header">
+  <div class="hero-overlay"></div>
+  <div class="hero-bottom">
+    <span class="hero-title">신촌교회 주보 편집실</span>
+    <div class="date-nav">
+      <button id="btnPrev">◀</button>
+      <span id="dateLabel">로딩중...</span>
+      <button id="btnNext">▶</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- 상단 탭 -->
+  <div class="topnav">
+    <div class="tab on" data-target="p1">📋 1면 · 예배순서</div>
+    <div class="tab" data-target="p2">👋 2면 · 새가족/봉사</div>
+    <div class="tab" data-target="p3">💰 3면 · 헌금/통계</div>
+    <div class="tab" data-target="p4">📅 4면 · 행사계획</div>
+    <div class="tab" data-target="p5">🏛 5면 · 예배안내</div>
+    <div class="tab" data-target="p6">🎓 6면 · 교회학교/청년부</div>
+    <div class="tab" data-target="p8">📣 8면 · 교회소식</div>
+    <div class="tab tab-preview" id="tabPreview">📄 내용 확인 / 출력</div>
+  </div>
+
+  <!-- 메인 -->
+  <div class="main">
+
+    <!-- 기본정보 띠 -->
+    <div class="info-bar">
+      <span style="color:rgba(255,255,255,.6);font-size:12px;font-weight:700;">📌 기본정보</span>
+      <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:140px;">
+        <label class="lbl" style="color:rgba(255,255,255,.7);margin:0;">권호</label>
+        <input type="text" id="p1_vol" placeholder="예: 제72권 24호" style="max-width:160px;">
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex:2;min-width:200px;">
+        <label class="lbl" style="color:rgba(255,255,255,.7);margin:0;">주일</label>
+        <input type="text" id="p1_special" placeholder="예: 환경주일 / 성령강림절 후 세 번째 주일">
+      </div>
+    </div>
+
+    <!-- ===== 1면 ===== -->
+    <div class="page on" id="p1">
+      <div class="pg-title">📋 1면 — 예배순서 <span class="pg-badge">Page 1</span></div>
+
+      <div class="card">
+        <div class="card-head">⛪ 주일예배 1~3부</div>
+        <div class="card-body" style="padding:0;">
+          <table class="jtable">
+            <colgroup><col style="width:108px"><col><col><col></colgroup>
+            <thead>
+              <tr>
+                <th>항목</th>
+                <th class="accent">1부 · 오전 7:30</th>
+                <th class="accent bl">2부 · 오전 9:00</th>
+                <th class="accent bl">3부 · 오전 11:00</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>※예배 선언</b></td>
+                <td colspan="3" class="bl"><input type="text" id="p1_declaration" value="사도신경" style="text-align:center;"></td>
+              </tr>
+              <tr>
+                <td><b>※경배와 찬양</b></td>
+                <td class="bl"><textarea id="p1_worship1" rows="3" placeholder="1부 찬양&#10;(여러 곡은 줄바꿈)"></textarea></td>
+                <td colspan="2" class="bl"><textarea id="p1_worship23" rows="3" placeholder="2~3부 공통 찬양&#10;(여러 곡은 줄바꿈)"></textarea></td>
+              </tr>
+              <tr>
+                <td><b>기&nbsp;&nbsp;&nbsp;&nbsp;도</b></td>
+                <td class="bl"><input type="text" id="p1_pray1" placeholder="예: 신용훈 장로"></td>
+                <td class="bl"><input type="text" id="p1_pray2" placeholder="예: 노상호 장로"></td>
+                <td class="bl"><input type="text" id="p1_pray3" placeholder="예: 양재근 장로"></td>
+              </tr>
+              <tr>
+                <td rowspan="2"><b>찬&nbsp;&nbsp;양&nbsp;&nbsp;대</b></td>
+                <td class="bl"><input type="text" id="p1_choir1_song" placeholder="찬양 곡명"></td>
+                <td class="bl"><input type="text" id="p1_choir2_song" placeholder="찬양 곡명"></td>
+                <td class="bl"><input type="text" id="p1_choir3_song" placeholder="찬양 곡명"></td>
+              </tr>
+              <tr>
+                <td class="bl"><input type="text" id="p1_choir1" placeholder="예: 예루살렘 찬양대"></td>
+                <td class="bl"><input type="text" id="p1_choir2" placeholder="예: 베다니 찬양대"></td>
+                <td class="bl"><input type="text" id="p1_choir3" placeholder="예: 시온 찬양대"></td>
+              </tr>
+              <tr>
+                <td><b>교 회 소 식</b></td>
+                <td class="bl"><input type="text" id="p1_news1" placeholder="예: 두성광 목사"></td>
+                <td class="bl"><input type="text" id="p1_news2" placeholder="예: 이효상 목사"></td>
+                <td class="bl"><input type="text" id="p1_news3" placeholder="예: 김희범 목사"></td>
+              </tr>
+              <tr>
+                <td><b>성 경 봉 독</b></td>
+                <td colspan="3" class="bl"><input type="text" id="p1_reading" placeholder="예: 시편 63:1~7 (구약p.847)"></td>
+              </tr>
+              <tr>
+                <td><b>설&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;교</b></td>
+                <td colspan="3" class="bl">
+                  <div class="row" style="margin:0;">
+                    <div class="fg w2"><input type="text" id="p1_sermon_title" placeholder="설교 제목"></div>
+                    <div class="fg"><input type="text" id="p1_sermon_ref" placeholder="본문 (예: 시편 63:1~7)"></div>
+                    <div class="fg"><input type="text" id="p1_sermon_preacher" placeholder="설교자" value="박노훈 담임목사"></div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><b>성&nbsp;&nbsp;찬&nbsp;&nbsp;식</b></td>
+                <td colspan="3" class="bl"><input type="text" id="p1_communion" placeholder="있을 때만 입력 (예: 담임목사) / 없으면 비워두세요"></td>
+              </tr>
+              <tr>
+                <td><b>※봉&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;헌</b></td>
+                <td colspan="3" class="bl"><input type="text" id="p1_offering" value="다같이" style="max-width:160px;"></td>
+              </tr>
+              <tr>
+                <td><b>※축&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;도</b></td>
+                <td colspan="3" class="bl"><input type="text" id="p1_benediction" value="담임목사" style="max-width:160px;"></td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="hint" style="padding:8px 12px;">※표는 헌신의 뜻으로 일어납니다.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">🌅 4부 · 5부 · 주일오후예배</div>
+        <div class="card-body" style="padding:0;">
+          <table class="jtable">
+            <colgroup><col style="width:33.3%"><col style="width:33.3%"><col></colgroup>
+            <thead>
+              <tr>
+                <th class="accent">4부 아름다운예배 · 오후 1:00</th>
+                <th class="accent bl">5부 청년부예배 · 오후 3:00</th>
+                <th class="accent bl">주일오후예배 · 오후 2:30</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="text-align:center;"><input type="text" id="p1_p4_title" placeholder="설교 제목" style="text-align:center;margin-bottom:4px;"><input type="text" id="p1_p4_ref" placeholder="본문" style="text-align:center;font-size:11px;"></td>
+                <td class="bl" style="text-align:center;"><input type="text" id="p1_p5_title" placeholder="설교 제목" style="text-align:center;margin-bottom:4px;"><input type="text" id="p1_p5_ref" placeholder="본문" style="text-align:center;font-size:11px;"></td>
+                <td class="bl" style="text-align:center;"><input type="text" id="p1_afternoon_title" placeholder="설교 제목" style="text-align:center;margin-bottom:4px;"><input type="text" id="p1_afternoon_ref" placeholder="본문" style="text-align:center;font-size:11px;"></td>
+              </tr>
+              <tr>
+                <td style="text-align:center;"><input type="text" id="p1_p4_preacher" value="박노훈 담임목사" style="text-align:center;font-weight:700;"></td>
+                <td class="bl" style="text-align:center;"><input type="text" id="p1_p5_preacher" value="두성광 목사" style="text-align:center;font-weight:700;"></td>
+                <td class="bl" style="text-align:center;"><input type="text" id="p1_afternoon_preacher" value="박성진 목사" style="text-align:center;font-weight:700;"></td>
+              </tr>
+              <tr>
+                <td style="text-align:center;"><input type="text" id="p1_p4_choir" value="갈보리 찬양대" style="text-align:center;color:var(--gray3);font-size:12px;"></td>
+                <td class="bl" style="text-align:center;"><input type="text" id="p1_p5_choir" value="SPRING 예배사역팀" style="text-align:center;color:var(--gray3);font-size:12px;"></td>
+                <td class="bl" style="text-align:center;"><input type="text" id="p1_afternoon_choir" value="드보라 찬양대" style="text-align:center;color:var(--gray3);font-size:12px;"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">🌙 주중예배</div>
+        <div class="card-body" style="padding:0;">
+          <table class="jtable">
+            <colgroup><col style="width:25%"><col style="width:25%"><col style="width:25%"><col style="width:25%"></colgroup>
+            <thead>
+              <tr>
+                <th colspan="2" class="accent">새벽기도회</th>
+                <th class="accent bl">수요오전예배<br><small style="font-weight:400;">오전 10:20</small></th>
+                <th class="accent bl">수요저녁예배<br><small style="font-weight:400;">저녁 7:30</small></th>
+              </tr>
+              <tr>
+                <th style="font-size:11px;font-weight:600;color:var(--gray3);">(월)~(금) 새벽 5:30</th>
+                <th class="bl" style="font-size:11px;font-weight:600;color:var(--gray3);">(토) 새벽 6:00</th>
+                <th class="bl"></th><th class="bl"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="text-align:center;"><input type="text" id="p1_dawn_ref" placeholder="예: 고린도전서 13~15장" style="text-align:center;font-size:12px;"></td>
+                <td class="bl" style="text-align:center;font-size:12px;color:var(--gray3);">토요일 동일</td>
+                <td class="bl" style="text-align:center;">
+                  <input type="text" id="p1_wed_am_title" placeholder="설교 제목" style="text-align:center;margin-bottom:4px;">
+                  <input type="text" id="p1_wed_am_ref" placeholder="본문" style="text-align:center;font-size:12px;">
+                </td>
+                <td class="bl" style="text-align:center;">
+                  <input type="text" id="p1_wed_pm_title" placeholder="설교 제목" style="text-align:center;margin-bottom:4px;">
+                  <input type="text" id="p1_wed_pm_ref" placeholder="본문" style="text-align:center;font-size:12px;">
+                </td>
+              </tr>
+              <tr>
+                <td style="text-align:center;"><input type="text" id="p1_dawn_preacher" value="박노훈 담임목사" style="text-align:center;font-weight:700;font-size:12px;"></td>
+                <td class="bl"></td>
+                <td class="bl" style="text-align:center;"><input type="text" id="p1_wed_am_preacher" value="박노훈 담임목사" style="text-align:center;font-weight:700;font-size:12px;"></td>
+                <td class="bl" style="text-align:center;"><input type="text" id="p1_wed_pm_preacher" value="김희범 목사" style="text-align:center;font-weight:700;font-size:12px;"></td>
+              </tr>
+              <tr>
+                <td colspan="2"></td>
+                <td class="bl" style="text-align:center;"><input type="text" id="p1_wed_am_choir" value="실로암 찬양대" style="text-align:center;font-size:12px;color:var(--gray3);"></td>
+                <td class="bl" style="text-align:center;"><input type="text" id="p1_wed_pm_choir" value="기드온 찬양대" style="text-align:center;font-size:12px;color:var(--gray3);"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /p1 -->
+
+    <!-- ===== 2면 ===== -->
+    <div class="page" id="p2">
+      <div class="pg-title">👋 2면 — 새가족 / 봉사위원 <span class="pg-badge">Page 2</span></div>
+      <div class="card">
+        <div class="card-head">🌱 새가족을 환영합니다</div>
+        <div class="card-body">
+          <table class="jtable" style="margin-bottom:8px;">
+            <thead><tr><th>번호</th><th>성명</th><th>성별</th><th>생년</th><th>인도자</th><th style="width:32px;"></th></tr></thead>
+            <tbody id="newMemberBody">
+              <tr>
+                <td><input type="text" placeholder="237"></td>
+                <td><input type="text" placeholder="성명"></td>
+                <td><select><option>남</option><option>여</option></select></td>
+                <td><input type="text" placeholder="89"></td>
+                <td><input type="text" placeholder="인도자"></td>
+                <td><button class="rm-btn" onclick="this.closest('tr').remove()">×</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <button class="add-btn" onclick="addMember()">+ 새가족 추가</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">📊 개인 전도 현황</div>
+        <div class="card-body"><textarea id="p2_evangelism" placeholder="7명 : 김 주&#10;4명 : 홍수현&#10;3명 : 강수진 김요한…"></textarea></div>
+      </div>
+      <div class="card">
+        <div class="card-head">🙏 다음주일 예배봉사위원</div>
+        <div class="card-body">
+          <table class="jtable">
+            <thead><tr><th>항목</th><th class="accent">1부</th><th class="accent bl">2부</th><th class="accent bl">3부</th></tr></thead>
+            <tbody>
+              <tr><td><b>기도</b></td><td class="bl"><input type="text" id="next_pray1"></td><td class="bl"><input type="text" id="next_pray2"></td><td class="bl"><input type="text" id="next_pray3"></td></tr>
+              <tr><td><b>안내</b></td><td class="bl"><input type="text" id="next_guide1"></td><td class="bl"><input type="text" id="next_guide2"></td><td class="bl"><input type="text" id="next_guide3"></td></tr>
+              <tr><td><b>금주안내</b></td><td class="bl"><input type="text" id="next_this1"></td><td class="bl"><input type="text" id="next_this2"></td><td class="bl"><input type="text" id="next_this3"></td></tr>
+              <tr><td><b>헌금위원</b></td><td colspan="3" class="bl"><input type="text" id="next_offering" placeholder="예: 1부: 남대현 정혜진 / 2부: 이용구 김선주 / 3부: 이신영 양인애"></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">📖 금주 성경읽기</div>
+        <div class="card-body">
+          <div class="row">
+            <div class="fg" style="max-width:180px;"><label class="lbl">월요일 날짜</label><input type="date" id="bibleMonday" oninput="updateBible()"></div>
+            <div class="fg w3"><label class="lbl">월~토 내용 (/ 로 구분)</label><input type="text" id="bibleContent" placeholder="욥 26~28장 / 욥 29~31장 / 욥 32~34장 / 욥 35~37장 / 욥 38~39장 / 욥 40~42장" oninput="updateBible()"></div>
+          </div>
+          <div id="biblePreview" style="font-size:12px;color:var(--gray7);background:var(--gray1);padding:8px 12px;border-radius:6px;margin-top:4px;"></div>
+        </div>
+      </div>
+    </div><!-- /p2 -->
+
+    <!-- ===== 3면 ===== -->
+    <div class="page" id="p3">
+      <div class="pg-title">💰 3면 — 헌금 / 통계 <span class="pg-badge">Page 3</span></div>
+      <div class="card">
+        <div class="card-head">📈 지난주 통계 (헌금)</div>
+        <div class="card-body">
+          <div class="row">
+            <div class="fg"><label class="lbl">십 일 조</label><input type="text" id="p3_tithe" placeholder="예: 90,131,339원"></div>
+            <div class="fg"><label class="lbl">주일헌금</label><input type="text" id="p3_sunday" placeholder="예: 7,917,500원"></div>
+            <div class="fg"><label class="lbl">함께 꿈을 키우는 헌금</label><input type="text" id="p3_dream" placeholder="예: 13,721,001원"></div>
+          </div>
+          <div class="row">
+            <div class="fg"><label class="lbl">감사헌금</label><input type="text" id="p3_thanks" placeholder="예: 9,630,000원"></div>
+            <div class="fg"><label class="lbl">선교헌금</label><input type="text" id="p3_mission" placeholder="예: 11,158,000원"></div>
+            <div class="fg"><label class="lbl">기타헌금 (장학헌금 외)</label><input type="text" id="p3_etc" placeholder="예: 2,044,360원"></div>
+          </div>
+          <div class="divider"></div>
+          <div class="row">
+            <div class="fg"><label class="lbl">지난주 헌금 합계</label><input type="text" id="p3_total" placeholder="예: 134,602,200원"></div>
+            <div class="fg"><label class="lbl">함께 꿈을 키우는 여정 달성률</label><input type="text" id="p3_rate" placeholder="예: 31.4%"></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /p3 -->
+
+    <!-- ===== 4면 ===== -->
+    <div class="page" id="p4">
+      <div class="pg-title">📅 4면 — 행사계획 <span class="pg-badge">Page 4</span></div>
+      <div class="card">
+        <div class="card-head">📅 행사계획</div>
+        <div class="card-body">
+          <div class="row">
+            <div class="fg"><label class="lbl">이달</label><input type="text" id="p4_this_month" placeholder="6월"></div>
+            <div class="fg"><label class="lbl">다음달</label><input type="text" id="p4_next_month" placeholder="7월"></div>
+          </div>
+          <div class="row">
+            <div class="fg"><label class="lbl">이달 행사</label><textarea id="p4_this" style="min-height:180px;" placeholder="6일(토) 온가족 새벽예배&#10;7일(주) 성찬식…"></textarea></div>
+            <div class="fg"><label class="lbl">다음달 행사</label><textarea id="p4_next" style="min-height:180px;" placeholder="1일(수) 미라클 3팀 선교…"></textarea></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">🙏 중보기도 모임 / 특별 모임</div>
+        <div class="card-body"><textarea id="p4_prayer" style="min-height:90px;"></textarea></div>
+      </div>
+      <div class="card">
+        <div class="card-head">🤝 섬김사역 안내</div>
+        <div class="card-body"><textarea id="p4_ministry" style="min-height:100px;"></textarea></div>
+      </div>
+    </div><!-- /p4 -->
+
+    <!-- ===== 5면 ===== -->
+    <div class="page" id="p5">
+      <div class="pg-title">🏛 5면 — 예배안내 <span class="pg-badge">Page 5</span></div>
+      <div class="card">
+        <div class="card-head">ℹ️ 변경사항만 입력하세요</div>
+        <div class="card-body">
+          <p class="hint" style="margin-bottom:8px;">예배 시간표는 고정입니다. 변경사항이 있을 때만 입력하세요.</p>
+          <textarea id="p5_changes" style="min-height:80px;" placeholder="변경사항 없으면 비워두세요."></textarea>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">👥 교회를 섬기는 분들 (변경사항)</div>
+        <div class="card-body">
+          <p class="hint" style="margin-bottom:8px;">인사이동, 새로 임명된 분들만 입력하세요.</p>
+          <textarea id="p5_staff" style="min-height:80px;" placeholder="변경사항 없으면 비워두세요."></textarea>
+        </div>
+      </div>
+    </div><!-- /p5 -->
+
+    <!-- ===== 6면 ===== -->
+    <div class="page" id="p6">
+      <div class="pg-title">🎓 6면 — 교회학교 / 청년부 <span class="pg-badge">Page 6</span></div>
+
+      <!-- 교회학교 광고 -->
+      <div class="card">
+        <div class="card-head">📚 교회학교 광고</div>
+        <div class="card-body">
+          <p class="hint" style="margin-bottom:10px;">광고 항목을 하나씩 추가하세요.</p>
+          <div id="schoolAdRows"></div>
+          <button class="add-btn" onclick="addAdRow('schoolAdRows')">+ 광고 추가</button>
+          <div class="divider"></div>
+          <label class="lbl">교회학교 행사계획</label>
+          <div class="row" style="margin-top:6px;">
+            <div class="fg"><label class="lbl" style="color:var(--gray3);">이달</label><textarea id="p6_school_this" style="min-height:72px;"></textarea></div>
+            <div class="fg"><label class="lbl" style="color:var(--gray3);">다음달</label><textarea id="p6_school_next" style="min-height:72px;"></textarea></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 청년부 광고 -->
+      <div class="card">
+        <div class="card-head">🌿 청년부 광고</div>
+        <div class="card-body">
+          <p class="hint" style="margin-bottom:10px;">광고 항목을 하나씩 추가하세요.</p>
+          <div id="youthAdRows"></div>
+          <button class="add-btn" onclick="addAdRow('youthAdRows')">+ 광고 추가</button>
+          <div class="divider"></div>
+          <label class="lbl">새가족 수료자 행사계획</label>
+          <div class="row" style="margin-top:6px;">
+            <div class="fg"><label class="lbl" style="color:var(--gray3);">이달</label><textarea id="p6_new_this" style="min-height:72px;"></textarea></div>
+            <div class="fg"><label class="lbl" style="color:var(--gray3);">다음달</label><textarea id="p6_new_next" style="min-height:72px;"></textarea></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /p6 -->
+
+    <!-- ===== 8면 ===== -->
+    <div class="page" id="p8">
+      <div class="pg-title">📣 8면 — 교회소식 <span class="pg-badge">Page 8</span></div>
+
+      <div class="card">
+        <div class="card-head">🏠 교회 소식</div>
+        <div class="card-body">
+          <div id="churchRows"></div>
+          <button class="add-btn" onclick="addDrow('churchRows','church')">+ 항목 추가</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">🏢 기관 소식</div>
+        <div class="card-body">
+          <div id="orgRows"></div>
+          <button class="add-btn" onclick="addDrow('orgRows','org')">+ 항목 추가</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">💌 교우 소식</div>
+        <div class="card-body">
+          <table class="jtable" style="margin-bottom:8px;">
+            <thead><tr><th style="width:110px;">종류</th><th>내용</th><th style="width:32px;"></th></tr></thead>
+            <tbody id="memberNewsBody">
+              <tr>
+                <td><select style="width:100%;"><option>출산</option><option>결혼</option><option>장례</option><option>입원/쾌유</option><option>기타</option></select></td>
+                <td><input type="text" placeholder="예: 장하리(장지옥, 이주현 득녀) – 3일"></td>
+                <td><button class="rm-btn" onclick="this.closest('tr').remove()">×</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <button class="add-btn" onclick="addMemberNews()">+ 교우소식 추가</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">📖 통독 / 성경 필사 / 찬송가 필사</div>
+        <div class="card-body">
+          <div class="row">
+            <div class="fg">
+              <label class="lbl">통독 (번호·이름)</label>
+              <input type="text" id="p8_reading" placeholder="예: 133)조윤정 134)윤금자 135)허수련 136)김성자">
+            </div>
+          </div>
+          <div class="row">
+            <div class="fg">
+              <label class="lbl">성경 필사 (번호·이름)</label>
+              <input type="text" id="p8_bible_copy" placeholder="예: 8)황란영">
+            </div>
+            <div class="fg">
+              <label class="lbl">찬송가 필사 (번호·이름)</label>
+              <input type="text" id="p8_hymn_copy" placeholder="예: 3)김철수">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">📢 우측 박스 광고</div>
+        <div class="card-body">
+          <div id="adsRows"></div>
+          <button class="add-btn" onclick="addAds()">+ 박스 추가</button>
+        </div>
+      </div>
+    </div><!-- /p8 -->
+
+  </div><!-- /main -->
+</div><!-- /wrap -->
+
+<!-- 하단 바 -->
+<div class="bottom">
+  <button class="btn btn-sub" onclick="saveDraft()">💾 임시저장</button>
+  <button class="btn btn-sub" onclick="loadDraft()">📂 불러오기</button>
+  <span id="saveNote"></span>
+  <button class="btn btn-ok" onclick="showPreview()">📄 내용 확인 / 출력 →</button>
+</div>
+
+<!-- 미리보기 모달 -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" style="max-width:780px;padding:0;overflow:hidden;">
+    <!-- 모달 헤더 -->
+    <div style="background:linear-gradient(90deg,var(--navy),var(--navy2));color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:15px;font-weight:700;">📄 주보 내용 미리보기</span>
+      <button onclick="closeModal()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:16px;line-height:1;">✕</button>
+    </div>
+    <!-- 탭 -->
+    <div style="display:flex;border-bottom:2px solid var(--border);background:#fff;overflow-x:auto;">
+      <div class="ptab on" data-pt="pt1" onclick="switchPTab(this,'pt1')" style="padding:9px 16px;cursor:pointer;font-size:12px;font-weight:600;color:var(--navy);border-bottom:3px solid var(--navy);white-space:nowrap;">1면 예배순서</div>
+      <div class="ptab" data-pt="pt2" onclick="switchPTab(this,'pt2')" style="padding:9px 16px;cursor:pointer;font-size:12px;font-weight:600;color:var(--gray3);white-space:nowrap;">2면 새가족/봉사</div>
+      <div class="ptab" data-pt="pt3" onclick="switchPTab(this,'pt3')" style="padding:9px 16px;cursor:pointer;font-size:12px;font-weight:600;color:var(--gray3);white-space:nowrap;">3면 헌금통계</div>
+      <div class="ptab" data-pt="pt8" onclick="switchPTab(this,'pt8')" style="padding:9px 16px;cursor:pointer;font-size:12px;font-weight:600;color:var(--gray3);white-space:nowrap;">8면 교회소식</div>
+      <div class="ptab" data-pt="ptAll" onclick="switchPTab(this,'ptAll')" style="padding:9px 16px;cursor:pointer;font-size:12px;font-weight:600;color:var(--gray3);white-space:nowrap;">전체보기</div>
+    </div>
+    <!-- 내용 -->
+    <div id="previewContent" style="max-height:62vh;overflow-y:auto;padding:20px;background:#f9fafc;"></div>
+    <!-- 하단 버튼 -->
+    <div style="padding:12px 20px;background:#fff;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-sub" onclick="closeModal()">닫기</button>
+      <button class="btn btn-sub" onclick="copyAll()">📋 전체 복사</button>
+      <button class="btn btn-ok" onclick="downloadTxt()">⬇️ 텍스트 저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== 탭 전환 =====
+document.querySelectorAll('.tab[data-target]').forEach(function(el) {
+  el.onclick = function() {
+    var id = this.getAttribute('data-target');
+    document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('on'); });
+    document.querySelectorAll('.tab[data-target]').forEach(function(t){ t.classList.remove('on'); });
+    var pg = document.getElementById(id);
+    if(pg) pg.classList.add('on');
+    this.classList.add('on');
+    document.querySelector('.main').scrollTop = 0;
+  };
+});
+document.getElementById('tabPreview').onclick = showPreview;
+
+// ===== 날짜 =====
+var curDate = new Date();
+(function(){
+  var diff = curDate.getDay()===0 ? 0 : 7-curDate.getDay();
+  curDate.setDate(curDate.getDate()+diff);
+  renderDate();
+})();
+function renderDate(){
+  var m=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  document.getElementById('dateLabel').textContent = curDate.getFullYear()+'년 '+m[curDate.getMonth()]+' '+curDate.getDate()+'일 주보';
+  document.title = '신촌교회 주보 편집실';
+  // hidden input 동기화
+  var y=curDate.getFullYear(), mo=String(curDate.getMonth()+1).padStart(2,'0'), d=String(curDate.getDate()).padStart(2,'0');
+  var inp=document.getElementById('mainDate'); if(inp) inp.value=y+'-'+mo+'-'+d;
+}
+document.getElementById('btnPrev').onclick = function(){ curDate.setDate(curDate.getDate()-7); renderDate(); };
+document.getElementById('btnNext').onclick = function(){ curDate.setDate(curDate.getDate()+7); renderDate(); };
+
+// ===== 새가족 =====
+function addMember(){
+  var tr=document.createElement('tr');
+  tr.innerHTML='<td><input type="text" placeholder="번호"></td><td><input type="text" placeholder="성명"></td><td><select><option>남</option><option>여</option></select></td><td><input type="text" placeholder="생년"></td><td><input type="text" placeholder="인도자"></td><td><button class="rm-btn" onclick="this.closest(\'tr\').remove()">×</button></td>';
+  document.getElementById('newMemberBody').appendChild(tr);
+}
+
+// ===== 교우소식 =====
+function addMemberNews(){
+  var tr=document.createElement('tr');
+  tr.innerHTML='<td><select style="width:100%;"><option>출산</option><option>결혼</option><option>장례</option><option>입원/쾌유</option><option>기타</option></select></td><td><input type="text"></td><td><button class="rm-btn" onclick="this.closest(\'tr\').remove()">×</button></td>';
+  document.getElementById('memberNewsBody').appendChild(tr);
+}
+
+// ===== 6면 광고 행 추가 =====
+function addAdRow(wrapperId) {
+  var wrap = document.getElementById(wrapperId);
+  var rows = wrap.querySelectorAll('.drow').length;
+  var div = document.createElement('div');
+  div.className = 'drow';
+  div.innerHTML = '<div class="dnum">' + (rows+1) + '</div>' +
+    '<textarea style="flex:1;min-height:60px;" placeholder="광고 내용 입력"></textarea>' +
+    '<button class="rm-btn" onclick="var p=this.parentNode,w=p.parentNode;p.remove();renum(w);">×</button>';
+  wrap.appendChild(div);
+}
+
+// ===== 8면 동적 행 =====
+function addDrow(wrapperId, type){
+  var wrap=document.getElementById(wrapperId);
+  var rows=wrap.querySelectorAll('.drow').length;
+  var div=document.createElement('div'); div.className='drow';
+  var numCls = type==='org' ? 'dnum mid' : 'dnum';
+  div.innerHTML='<div class="'+numCls+'">'+(rows+1)+'</div><textarea style="flex:1;min-height:50px;"></textarea><button class="rm-btn" onclick="var p=this.parentNode,w=p.parentNode; p.remove(); renum(w);">×</button>';
+  wrap.appendChild(div);
+}
+function renum(wrap){
+  wrap.querySelectorAll('.dnum').forEach(function(d,i){ d.textContent=i+1; });
+}
+function addAds(){
+  var wrap=document.getElementById('adsRows');
+  var div=document.createElement('div'); div.className='drow';
+  div.innerHTML='<textarea style="flex:1;min-height:72px;" placeholder="박스 내용 입력"></textarea><button class="rm-btn" onclick="this.parentNode.remove()">×</button>';
+  wrap.appendChild(div);
+}
+
+// ===== 성경읽기 =====
+function updateBible(){
+  var monday=document.getElementById('bibleMonday').value;
+  var content=document.getElementById('bibleContent').value;
+  var days=['월','화','수','목','금','토'];
+  var parts=content.split('/').map(function(s){return s.trim();});
+  var html='';
+  if(monday){
+    var base=new Date(monday+'T00:00:00');
+    days.forEach(function(d,i){
+      var dt=new Date(base); dt.setDate(base.getDate()+i);
+      html+='<b>'+(dt.getMonth()+1)+'/'+(dt.getDate())+'('+d+')</b> '+(parts[i]||'')+'　';
+    });
+  } else {
+    days.forEach(function(d,i){ html+='<b>('+d+')</b> '+(parts[i]||'')+'　'; });
+  }
+  document.getElementById('biblePreview').innerHTML=html;
+}
+
+// ===== 저장/불러오기 =====
+function getAll(){
+  var data={};
+  document.querySelectorAll('input[id],textarea[id],select[id]').forEach(function(el){ data[el.id]=el.value; });
+  // 날짜
+  data._date = curDate.toISOString();
+  // 새가족
+  data._members=[];
+  document.querySelectorAll('#newMemberBody tr').forEach(function(tr){
+    var cells=tr.querySelectorAll('input,select');
+    data._members.push(Array.from(cells).map(function(c){return c.value;}));
+  });
+  // 교우소식
+  data._mnews=[];
+  document.querySelectorAll('#memberNewsBody tr').forEach(function(tr){
+    var s=tr.querySelector('select'), i=tr.querySelector('input');
+    if(s&&i) data._mnews.push({type:s.value,content:i.value});
+  });
+  // 8면 동적
+  data._church=Array.from(document.querySelectorAll('#churchRows textarea')).map(function(t){return t.value;});
+  data._org=Array.from(document.querySelectorAll('#orgRows textarea')).map(function(t){return t.value;});
+  data._ads=Array.from(document.querySelectorAll('#adsRows textarea')).map(function(t){return t.value;});
+  data._schoolAds=Array.from(document.querySelectorAll('#schoolAdRows textarea')).map(function(t){return t.value;});
+  data._youthAds=Array.from(document.querySelectorAll('#youthAdRows textarea')).map(function(t){return t.value;});
+  return data;
+}
+function saveDraft(){
+  localStorage.setItem('shinchon_jubbo2',JSON.stringify(getAll()));
+  toast('💾 임시저장 완료!');
+  document.getElementById('saveNote').textContent='저장: '+new Date().toLocaleTimeString('ko-KR');
+}
+function loadDraft(){
+  var raw=localStorage.getItem('shinchon_jubbo2');
+  if(!raw){toast('저장된 내용이 없습니다');return;}
+  var d=JSON.parse(raw);
+  Object.keys(d).forEach(function(k){
+    if(k.startsWith('_'))return;
+    var el=document.getElementById(k); if(el) el.value=d[k];
+  });
+  if(d._date){ curDate=new Date(d._date); renderDate(); }
+  // 새가족
+  if(d._members&&d._members.length){
+    var body=document.getElementById('newMemberBody'); body.innerHTML='';
+    d._members.forEach(function(row){
+      var tr=document.createElement('tr');
+      tr.innerHTML='<td><input type="text" value="'+(row[0]||'')+'"></td><td><input type="text" value="'+(row[1]||'')+'"></td><td><select><option'+(row[2]==='남'?' selected':'')+'>남</option><option'+(row[2]==='여'?' selected':'')+'>여</option></select></td><td><input type="text" value="'+(row[3]||'')+'"></td><td><input type="text" value="'+(row[4]||'')+'"></td><td><button class="rm-btn" onclick="this.closest(\'tr\').remove()">×</button></td>';
+      body.appendChild(tr);
+    });
+  }
+  // 교우소식
+  if(d._mnews&&d._mnews.length){
+    var mb=document.getElementById('memberNewsBody'); mb.innerHTML='';
+    d._mnews.forEach(function(m){
+      var types=['출산','결혼','장례','입원/쾌유','기타'];
+      var opts=types.map(function(t){return '<option'+(t===m.type?' selected':'')+'>'+t+'</option>';}).join('');
+      var tr=document.createElement('tr');
+      tr.innerHTML='<td><select style="width:100%;">'+opts+'</select></td><td><input type="text" value="'+(m.content||'')+'"></td><td><button class="rm-btn" onclick="this.closest(\'tr\').remove()">×</button></td>';
+      mb.appendChild(tr);
+    });
+  }
+  // 8면
+  function restoreDrows(wrapperId, arr, type){
+    var wrap=document.getElementById(wrapperId); wrap.innerHTML='';
+    arr.forEach(function(txt,i){
+      var div=document.createElement('div'); div.className='drow';
+      var nc=type==='org'?'dnum mid':'dnum';
+      div.innerHTML='<div class="'+nc+'">'+(i+1)+'</div><textarea style="flex:1;min-height:50px;">'+txt+'</textarea><button class="rm-btn" onclick="var p=this.parentNode,w=p.parentNode;p.remove();renum(w);">×</button>';
+      wrap.appendChild(div);
+    });
+  }
+  if(d._church&&d._church.length) restoreDrows('churchRows',d._church,'church'); else addDrow('churchRows','church');
+  if(d._org&&d._org.length) restoreDrows('orgRows',d._org,'org'); else addDrow('orgRows','org');
+  if(d._ads&&d._ads.length){
+    var aw=document.getElementById('adsRows'); aw.innerHTML='';
+    d._ads.forEach(function(txt){ var div=document.createElement('div'); div.className='drow'; div.innerHTML='<textarea style="flex:1;min-height:72px;">'+txt+'</textarea><button class="rm-btn" onclick="this.parentNode.remove()">×</button>'; aw.appendChild(div); });
+  }
+  // 6면 광고 복원
+  function restoreAdRows(wrapperId, arr) {
+    var wrap = document.getElementById(wrapperId); wrap.innerHTML='';
+    arr.forEach(function(txt, i) {
+      var div = document.createElement('div'); div.className='drow';
+      div.innerHTML='<div class="dnum">'+(i+1)+'</div><textarea style="flex:1;min-height:60px;">'+txt+'</textarea><button class="rm-btn" onclick="var p=this.parentNode,w=p.parentNode;p.remove();renum(w);">×</button>';
+      wrap.appendChild(div);
+    });
+  }
+  if(d._schoolAds&&d._schoolAds.length) restoreAdRows('schoolAdRows',d._schoolAds); else addAdRow('schoolAdRows');
+  if(d._youthAds&&d._youthAds.length) restoreAdRows('youthAdRows',d._youthAds); else addAdRow('youthAdRows');
+  updateBible();
+  toast('📂 불러오기 완료!');
+}
+
+// ===== 미리보기 =====
+var _previewData = {};
+
+function switchPTab(el, id) {
+  document.querySelectorAll('.ptab').forEach(function(t) {
+    t.style.color = 'var(--gray3)';
+    t.style.borderBottom = 'none';
+  });
+  el.style.color = 'var(--navy)';
+  el.style.borderBottom = '3px solid var(--navy)';
+  renderPreviewTab(id);
+}
+
+function renderPreviewTab(id) {
+  var d = _previewData;
+  var m = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  var ymd = curDate.getFullYear()+'년 '+m[curDate.getMonth()]+' '+curDate.getDate()+'일';
+
+  var s = ''; // html 출력
+
+  // 공통 스타일
+  var TS = 'border-collapse:collapse;width:100%;font-size:13px;margin-bottom:16px;';
+  var TH = 'background:#1e3a6e;color:#fff;padding:8px 12px;font-size:12px;text-align:center;';
+  var TH2 = 'background:#e8edf5;color:#1e3a6e;padding:7px 10px;font-size:12px;font-weight:700;';
+  var TD = 'padding:7px 10px;border:1px solid #d0d8e8;font-size:13px;';
+  var TDC = 'padding:7px 10px;border:1px solid #d0d8e8;font-size:13px;text-align:center;';
+
+  function badge(txt) { return '<span style="background:#1e3a6e;color:#fff;font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px;margin-right:6px;">'+txt+'</span>'; }
+  function title(txt) { return '<div style="font-size:15px;font-weight:800;color:#1e3a6e;margin:0 0 12px;display:flex;align-items:center;">'+txt+'</div>'; }
+  function empty(txt) { return '<div style="color:#9ca3af;font-size:13px;padding:12px;text-align:center;background:#f5f6f8;border-radius:6px;margin-bottom:12px;">'+txt+'</div>'; }
+
+  if (id === 'pt1' || id === 'ptAll') {
+    s += title(badge('1면')+'예배순서 — '+ymd);
+    // 헤더 정보
+    s += '<div style="background:#1e3a6e;color:#fff;border-radius:8px 8px 0 0;padding:10px 14px;font-size:13px;font-weight:700;margin-bottom:0;">'+
+         (d.p1_vol||'권호 미입력')+' | '+ymd+
+         (d.p1_special ? '&nbsp;&nbsp;·&nbsp;&nbsp;'+d.p1_special : '')+'</div>';
+    // 1~3부 표
+    s += '<table style="'+TS+'margin-top:0;border-top:none;">';
+    s += '<tr><th style="'+TH+';width:100px;border:1px solid #2d5090;">항목</th>'+
+         '<th style="'+TH+';border:1px solid #2d5090;">1부 · 오전 7:30</th>'+
+         '<th style="'+TH+';border:1px solid #2d5090;">2부 · 오전 9:00</th>'+
+         '<th style="'+TH+';border:1px solid #2d5090;">3부 · 오전 11:00</th></tr>';
+    var rows1 = [
+      ['※예배 선언', d.p1_declaration||'사도신경', '', '', true],
+      ['※경배와 찬양', nl2br(d.p1_worship1)||'', '', nl2br(d.p1_worship23)||'', false, true],
+      ['기&nbsp;&nbsp;&nbsp;&nbsp;도', d.p1_pray1||'', d.p1_pray2||'', d.p1_pray3||'', false],
+      ['찬&nbsp;&nbsp;양&nbsp;&nbsp;대', (d.p1_choir1_song||'')+'<br><small style="color:#9ca3af">'+(d.p1_choir1||'')+'</small>',
+                    (d.p1_choir2_song||'')+'<br><small style="color:#9ca3af">'+(d.p1_choir2||'')+'</small>',
+                    (d.p1_choir3_song||'')+'<br><small style="color:#9ca3af">'+(d.p1_choir3||'')+'</small>', false],
+      ['교 회 소 식', d.p1_news1||'', d.p1_news2||'', d.p1_news3||'', false],
+      ['성 경 봉 독', d.p1_reading||'', '', '', true],
+      ['설&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;교', '"'+(d.p1_sermon_title||'??')+'" ('+( d.p1_sermon_ref||'??')+') — '+(d.p1_sermon_preacher||'박노훈 담임목사'), '', '', true],
+    ];
+    if (d.p1_communion) rows1.push(['성&nbsp;&nbsp;찬&nbsp;&nbsp;식', d.p1_communion, '', '', true]);
+    rows1.push(['※봉&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;헌', d.p1_offering||'다같이','','',true]);
+    rows1.push(['※축&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;도', d.p1_benediction||'담임목사','','',true]);
+
+    rows1.forEach(function(r,i) {
+      var bg = i%2===0 ? '#fff' : '#fafbfd';
+      if (r[4]) { // colspan
+        s += '<tr style="background:'+bg+'"><td style="'+TD+'font-weight:700;background:#e8edf5;width:100px;">'+r[0]+'</td>'+
+             '<td colspan="3" style="'+TDC+'">'+r[1]+'</td></tr>';
+      } else if (r[5]) { // 경배찬양 특수
+        s += '<tr style="background:'+bg+'"><td style="'+TD+'font-weight:700;background:#e8edf5;">'+r[0]+'</td>'+
+             '<td style="'+TDC+'">'+nl2br(r[1])+'</td>'+
+             '<td colspan="2" style="'+TDC+'">'+nl2br(r[3])+'</td></tr>';
+      } else {
+        s += '<tr style="background:'+bg+'"><td style="'+TD+'font-weight:700;background:#e8edf5;">'+r[0]+'</td>'+
+             '<td style="'+TDC+'">'+r[1]+'</td><td style="'+TDC+'">'+r[2]+'</td><td style="'+TDC+'">'+r[3]+'</td></tr>';
+      }
+    });
+    s += '</table>';
+    s += '<p style="font-size:11px;color:#9ca3af;margin:-10px 0 16px;">※표는 헌신의 뜻으로 일어납니다.</p>';
+
+    // 4부/5부/오후
+    s += '<table style="'+TS+'">';
+    s += '<tr>'+
+         '<th style="'+TH+';border:1px solid #2d5090;">4부 아름다운예배 · 오후 1:00</th>'+
+         '<th style="'+TH+';border:1px solid #2d5090;">5부 청년부예배 · 오후 3:00</th>'+
+         '<th style="'+TH+';border:1px solid #2d5090;">주일오후예배 · 오후 2:30</th></tr>';
+    s += '<tr>'+
+         '<td style="'+TDC+'font-weight:700;">"'+(d.p1_p4_title||'??')+'"<br><small style="color:#9ca3af;">'+(d.p1_p4_ref||'??')+'</small></td>'+
+         '<td style="'+TDC+'font-weight:700;">"'+(d.p1_p5_title||'??')+'"<br><small style="color:#9ca3af;">'+(d.p1_p5_ref||'??')+'</small></td>'+
+         '<td style="'+TDC+'font-weight:700;">"'+(d.p1_afternoon_title||'??')+'"<br><small style="color:#9ca3af;">'+(d.p1_afternoon_ref||'??')+'</small></td></tr>';
+    s += '<tr style="background:#fafbfd;">'+
+         '<td style="'+TDC+'font-weight:700;">'+(d.p1_p4_preacher||'박노훈 담임목사')+'</td>'+
+         '<td style="'+TDC+'font-weight:700;">'+(d.p1_p5_preacher||'두성광 목사')+'</td>'+
+         '<td style="'+TDC+'font-weight:700;">'+(d.p1_afternoon_preacher||'박성진 목사')+'</td></tr>';
+    s += '<tr><td style="'+TDC+'color:#9ca3af;">'+(d.p1_p4_choir||'갈보리 찬양대')+'</td>'+
+         '<td style="'+TDC+'color:#9ca3af;">'+(d.p1_p5_choir||'SPRING 예배사역팀')+'</td>'+
+         '<td style="'+TDC+'color:#9ca3af;">'+(d.p1_afternoon_choir||'드보라 찬양대')+'</td></tr>';
+    s += '</table>';
+
+    // 주중예배
+    s += '<table style="'+TS+'">';
+    s += '<tr>'+
+         '<th colspan="2" style="'+TH+';border:1px solid #2d5090;">새벽기도회</th>'+
+         '<th style="'+TH+';border:1px solid #2d5090;">수요오전예배 · 오전 10:20</th>'+
+         '<th style="'+TH+';border:1px solid #2d5090;">수요저녁예배 · 저녁 7:30</th></tr>';
+    s += '<tr style="background:#f5f6f8;"><th style="'+TH2+';border:1px solid #d0d8e8;font-weight:600;">(월)~(금) 새벽 5:30</th>'+
+         '<th style="'+TH2+';border:1px solid #d0d8e8;font-weight:600;">(토) 새벽 6:00</th><th style="border:1px solid #d0d8e8;"></th><th style="border:1px solid #d0d8e8;"></th></tr>';
+    s += '<tr><td style="'+TDC+'">'+(d.p1_dawn_ref||'')+'</td>'+
+         '<td style="'+TDC+'color:#9ca3af;">토요일 동일</td>'+
+         '<td style="'+TDC+'">"'+(d.p1_wed_am_title||'??')+'"<br><small style="color:#9ca3af;">'+(d.p1_wed_am_ref||'')+'</small></td>'+
+         '<td style="'+TDC+'">"'+(d.p1_wed_pm_title||'??')+'"<br><small style="color:#9ca3af;">'+(d.p1_wed_pm_ref||'')+'</small></td></tr>';
+    s += '<tr style="background:#fafbfd;">'+
+         '<td style="'+TDC+'font-weight:700;">'+(d.p1_dawn_preacher||'박노훈 담임목사')+'</td><td></td>'+
+         '<td style="'+TDC+'font-weight:700;">'+(d.p1_wed_am_preacher||'')+'</td>'+
+         '<td style="'+TDC+'font-weight:700;">'+(d.p1_wed_pm_preacher||'')+'</td></tr>';
+    s += '<tr><td colspan="2"></td>'+
+         '<td style="'+TDC+'color:#9ca3af;">'+(d.p1_wed_am_choir||'실로암 찬양대')+'</td>'+
+         '<td style="'+TDC+'color:#9ca3af;">'+(d.p1_wed_pm_choir||'기드온 찬양대')+'</td></tr>';
+    s += '</table>';
+    if (id === 'ptAll') s += '<hr style="border:none;border-top:2px solid #d0d8e8;margin:20px 0;">';
+  }
+
+  if (id === 'pt2' || id === 'ptAll') {
+    s += title(badge('2면')+'새가족 / 봉사위원');
+    // 새가족 표
+    var memRows = document.querySelectorAll('#newMemberBody tr');
+    if (memRows.length) {
+      s += '<table style="'+TS+'"><tr>'+
+           '<th style="'+TH+';border:1px solid #2d5090;">번호</th>'+
+           '<th style="'+TH+';border:1px solid #2d5090;">성명</th>'+
+           '<th style="'+TH+';border:1px solid #2d5090;">성별</th>'+
+           '<th style="'+TH+';border:1px solid #2d5090;">생년</th>'+
+           '<th style="'+TH+';border:1px solid #2d5090;">인도자</th></tr>';
+      memRows.forEach(function(tr,i){
+        var c=tr.querySelectorAll('input,select');
+        var bg=i%2===0?'#fff':'#fafbfd';
+        s+='<tr style="background:'+bg+'">'+Array.from(c).map(function(x){return '<td style="'+TDC+'">'+x.value+'</td>';}).join('')+'</tr>';
+      });
+      s += '</table>';
+    }
+    // 전도 현황
+    if (d.p2_evangelism) {
+      s += '<div style="background:#e8edf5;border-radius:8px;padding:12px 14px;margin-bottom:14px;">'+
+           '<div style="font-size:11px;font-weight:700;color:#1e3a6e;margin-bottom:6px;">개인 전도 현황</div>'+
+           '<div style="font-size:13px;white-space:pre-wrap;line-height:1.7;">'+d.p2_evangelism+'</div></div>';
+    }
+    // 다음주 봉사위원
+    s += '<table style="'+TS+'">';
+    s += '<tr><th style="'+TH+';border:1px solid #2d5090;width:90px;">항목</th>'+
+         '<th style="'+TH+';border:1px solid #2d5090;">1부</th>'+
+         '<th style="'+TH+';border:1px solid #2d5090;">2부</th>'+
+         '<th style="'+TH+';border:1px solid #2d5090;">3부</th></tr>';
+    [['기도', 'next_pray1','next_pray2','next_pray3'],
+     ['안내', 'next_guide1','next_guide2','next_guide3'],
+     ['금주안내','next_this1','next_this2','next_this3']].forEach(function(r,i){
+      var bg=i%2===0?'#fff':'#fafbfd';
+      s+='<tr style="background:'+bg+'"><td style="'+TD+'font-weight:700;background:#e8edf5;">'+r[0]+'</td>'+
+         '<td style="'+TDC+'">'+( d[r[1]]||'')+'</td><td style="'+TDC+'">'+( d[r[2]]||'')+'</td><td style="'+TDC+'">'+( d[r[3]]||'')+'</td></tr>';
+    });
+    s += '<tr><td style="'+TD+'font-weight:700;background:#e8edf5;">헌금위원</td>'+
+         '<td colspan="3" style="'+TD+'">'+( d.next_offering||'')+'</td></tr>';
+    s += '</table>';
+
+    // 성경읽기
+    var bp = document.getElementById('biblePreview').innerHTML;
+    if (bp) {
+      s += '<div style="background:#e8edf5;border-radius:8px;padding:12px 14px;">'+
+           '<div style="font-size:11px;font-weight:700;color:#1e3a6e;margin-bottom:6px;">금주 성경읽기 안내</div>'+
+           '<div style="font-size:13px;line-height:2;">'+bp+'</div></div>';
+    }
+    if (id === 'ptAll') s += '<hr style="border:none;border-top:2px solid #d0d8e8;margin:20px 0;">';
+  }
+
+  if (id === 'pt3' || id === 'ptAll') {
+    s += title(badge('3면')+'헌금 / 통계');
+    s += '<table style="'+TS+'">';
+    var hrows=[['십 일 조',d.p3_tithe],['주일헌금',d.p3_sunday],['함께 꿈을 키우는 헌금',d.p3_dream],
+               ['감사헌금',d.p3_thanks],['선교헌금',d.p3_mission],['기타헌금(장학헌금 외)',d.p3_etc]];
+    hrows.forEach(function(r,i){
+      var bg=i%2===0?'#fff':'#fafbfd';
+      s+='<tr style="background:'+bg+'"><td style="'+TD+'font-weight:700;background:#e8edf5;width:200px;">'+r[0]+'</td>'+
+         '<td style="'+TD+'text-align:right;font-weight:'+(r[1]?'700':'400')+';color:'+(r[1]?'#1e3a6e':'#9ca3af')+';">'+( r[1]||'미입력')+'</td></tr>';
+    });
+    s += '<tr style="background:#1e3a6e;"><td style="padding:9px 10px;font-weight:800;color:#fff;">지난주 헌금 합계</td>'+
+         '<td style="padding:9px 10px;text-align:right;font-weight:800;color:#ffd700;font-size:15px;">'+(d.p3_total||'미입력')+'</td></tr>';
+    s += '<tr><td style="'+TD+'background:#e8edf5;font-weight:700;">함께 꿈을 키우는 여정 달성률</td>'+
+         '<td style="'+TD+'text-align:right;font-weight:700;color:#2d7a4f;">'+(d.p3_rate||'')+'</td></tr>';
+    s += '</table>';
+    if (id === 'ptAll') s += '<hr style="border:none;border-top:2px solid #d0d8e8;margin:20px 0;">';
+  }
+
+  if (id === 'pt8' || id === 'ptAll') {
+    s += title(badge('8면')+'교회소식');
+    // 교회소식
+    var ch = Array.from(document.querySelectorAll('#churchRows textarea')).map(function(t,i){return t.value;}).filter(Boolean);
+    if (ch.length) {
+      s += '<div style="background:#fff;border:1px solid #d0d8e8;border-radius:8px;padding:14px;margin-bottom:12px;">'+
+           '<div style="font-size:12px;font-weight:700;color:#1e3a6e;margin-bottom:8px;border-bottom:1px solid #e8edf5;padding-bottom:6px;">■ 교회 소식</div>';
+      ch.forEach(function(t,i){ s+='<div style="font-size:13px;margin-bottom:6px;line-height:1.6;"><b>'+(i+1)+'.</b> '+t+'</div>'; });
+      s += '</div>';
+    }
+    // 기관소식
+    var og = Array.from(document.querySelectorAll('#orgRows textarea')).map(function(t){return t.value;}).filter(Boolean);
+    if (og.length) {
+      s += '<div style="background:#fff;border:1px solid #d0d8e8;border-radius:8px;padding:14px;margin-bottom:12px;">'+
+           '<div style="font-size:12px;font-weight:700;color:#1e3a6e;margin-bottom:8px;border-bottom:1px solid #e8edf5;padding-bottom:6px;">■ 기관 소식</div>';
+      og.forEach(function(t,i){ s+='<div style="font-size:13px;margin-bottom:6px;line-height:1.6;"><b>'+(i+1)+'.</b> '+t+'</div>'; });
+      s += '</div>';
+    }
+    // 교우소식
+    var mn = Array.from(document.querySelectorAll('#memberNewsBody tr')).map(function(tr){
+      var sel=tr.querySelector('select'), inp=tr.querySelector('input');
+      return sel&&inp&&inp.value ? {type:sel.value, content:inp.value} : null;
+    }).filter(Boolean);
+    if (mn.length) {
+      s += '<div style="background:#fff;border:1px solid #d0d8e8;border-radius:8px;padding:14px;margin-bottom:12px;">'+
+           '<div style="font-size:12px;font-weight:700;color:#1e3a6e;margin-bottom:8px;border-bottom:1px solid #e8edf5;padding-bottom:6px;">■ 교우 소식</div>';
+      mn.forEach(function(m){
+        var clr={'출산':'#2d7a4f','결혼':'#4a7cc7','장례':'#6b7280','입원/쾌유':'#c9a84c','기타':'#9ca3af'};
+        s+='<div style="font-size:13px;margin-bottom:6px;"><span style="background:'+(clr[m.type]||'#9ca3af')+';color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;margin-right:6px;">'+m.type+'</span>'+m.content+'</div>';
+      });
+      s += '</div>';
+    }
+    if (d.p8_reading||d.p8_bible_copy||d.p8_hymn_copy) {
+      s += '<div style="background:#fff;border:1px solid #d0d8e8;border-radius:8px;padding:14px;margin-bottom:12px;">'+
+           '<div style="font-size:12px;font-weight:700;color:#1e3a6e;margin-bottom:8px;">■ 통독 / 성경 필사 / 찬송가 필사</div>'+
+           (d.p8_reading?'<div style="font-size:13px;margin-bottom:4px;">통독: '+d.p8_reading+'</div>':'')+
+           (d.p8_bible_copy?'<div style="font-size:13px;margin-bottom:4px;">성경필사: '+d.p8_bible_copy+'</div>':'')+
+           (d.p8_hymn_copy?'<div style="font-size:13px;">찬송가필사: '+d.p8_hymn_copy+'</div>':'')+'</div>';
+    }
+  }
+
+  if (!s) s = empty('입력된 내용이 없습니다.');
+  document.getElementById('previewContent').innerHTML = s;
+}
+
+function nl2br(str) {
+  if (!str) return '';
+  return str.replace(/\n/g, '<br>');
+}
+
+function showPreview() {
+  _previewData = getAll();
+  // 탭 초기화
+  document.querySelectorAll('.ptab').forEach(function(t){
+    t.style.color='var(--gray3)'; t.style.borderBottom='none';
+  });
+  var first = document.querySelector('.ptab');
+  if(first){ first.style.color='var(--navy)'; first.style.borderBottom='3px solid var(--navy)'; }
+  renderPreviewTab('pt1');
+  document.getElementById('modalBg').classList.add('on');
+}
+function closeModal(){ document.getElementById('modalBg').classList.remove('on'); }
+function copyAll(){
+  var txt = document.getElementById('previewContent').innerText;
+  navigator.clipboard.writeText(txt).then(function(){ toast('📋 복사 완료!'); });
+}
+function downloadTxt(){
+  var fn='신촌교회_주보_'+curDate.getFullYear()+String(curDate.getMonth()+1).padStart(2,'0')+String(curDate.getDate()).padStart(2,'0')+'.txt';
+  var blob=new Blob([document.getElementById('previewContent').innerText],{type:'text/plain;charset=utf-8'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fn; a.click();
+  toast('⬇️ 저장 완료!');
+}
+
+// ===== 토스트 =====
+function toast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on'); setTimeout(function(){t.classList.remove('on');},2500); }
+
+// ===== 초기화 =====
+addDrow('churchRows','church');
+addDrow('orgRows','org');
+addAds();
+addAdRow('schoolAdRows');
+addAdRow('youthAdRows');
+setInterval(saveDraft, 120000);
+</script>
+</body>
+</html>
